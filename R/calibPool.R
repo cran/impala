@@ -17,7 +17,6 @@
 #' - discrep_vars: discrepancy coefficients
 #' - llik: log likelihood
 #' - theta_native: mcmc samples of variables in native scale
-#' @example inst/small_example.R
 #' @export
 #'
 calibPool <- function(setup) {
@@ -61,8 +60,12 @@ calibPool <- function(setup) {
   }
 
   for (i in 1:setup$nexp) {
+    tmp_theta = theta[1, , ]
+    if (dim(theta)[3] == 1){
+      tmp_theta = t(t(tmp_theta))
+    }
     pred_curr[[i]] = evalm(setup$models[[i]],
-                           tran_unif(theta[1, , ], setup$bounds_mat, names(setup$bounds)),
+                           tran_unif(tmp_theta, setup$bounds_mat, names(setup$bounds)),
                            TRUE)
 
     for (t in 1:setup$ntemps) {
@@ -135,8 +138,12 @@ calibPool <- function(setup) {
 
       setup$models[[i]] = step_m(setup$models[[i]])
       if (setup$models[[i]]$stochastic) {
+        tmp_theta = theta[m, , ]
+        if (dim(theta)[3] == 1){
+          tmp_theta = t(t(tmp_theta))
+        }
         pred_curr[[i]] = evalm(setup$models[[i]],
-                               tran_unif(theta[m, , ], setup$bounds_mat, names(setup$bounds)),
+                               tran_unif(tmp_theta, setup$bounds_mat, names(setup$bounds)),
                                TRUE)
       }
       if ((setup$models[[i]]$nd > 0) |
@@ -204,6 +211,9 @@ calibPool <- function(setup) {
     if (m %% setup$decor == 0) {
       for (k in 1:setup$p) {
         theta_cand = theta[m, , ]
+        if (dim(theta)[3] == 1){
+          theta_cand = t(t(theta_cand))
+        }
         theta_cand[, k] = stats::runif(setup$ntemps)
         good_values = setup$checkConstraints(tran_unif(theta_cand, setup$bounds_mat, names(setup$bounds)),
                                              setup$bounds)
@@ -372,7 +382,10 @@ calibPool <- function(setup) {
     s2[[i]] = exp(log_s2[[i]])
   }
 
-  theta_native = tran_unif(theta[, 1, ], setup$bounds_mat, names(setup$bounds))
+  if (dim(theta)[3] == 1){
+    theta_cand = t(t(theta[, 1, ]))
+  }
+  theta_native = tran_unif(theta_cand, setup$bounds_mat, names(setup$bounds))
 
   out <- list(
     theta = theta,

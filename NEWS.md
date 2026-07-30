@@ -1,3 +1,6 @@
+# impala 0.1.3
+* Bugfixes for dimensions
+
 # impala 0.1.2
 * Bugfixes to discrepancy
 
